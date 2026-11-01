@@ -1,0 +1,73 @@
+Product API: live debugging demonstration
+
+Scenario
+A user marks an existing product as sold out. The PUT request succeeds
+with HTTP 200, but the quantity stays positive. Other fields update.
+Creating a product with zero stock works. Positive stock updates work.
+All endpoints now consistently serialize the price field as price.
+
+Reproduce in Postman
+1. Import postman/product-api-debug-demo.postman_collection.json.
+2. Set baseUrl to http://localhost:8080.
+3. Send Create product with stock 10. The returned ID is saved automatically.
+4. Send Set stock to zero. Its full PUT body contains stockQuantity: 0.
+5. The response is 200, but stockQuantity is 10.
+6. Send Verify persisted stock is zero. GET also returns 10.
+7. Both "Stock quantity is zero" assertions fail. This is the expected
+   before-fix result. Delete demo product cleans up when you finish.
+   Rerun Create to start a fresh attempt; no seed-data assumptions are needed.
+
+Start or attach a debugger
+Use Java 21. You can run ProductApiApplication directly in your IDE's
+Debug mode. Stop the existing instance first to release port 8080.
+
+Alternatively, start from the project root with Maven:
+
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005"
+
+Then attach your IDE's Remote JVM Debug configuration to localhost:5005.
+The port accepts local connections. In this workspace the updated server
+was already started with that debug port and is available to attach.
+If your Postman timeout is short, increase it while stepping through code.
+
+Breakpoint sequence (paths relative to src/main/java/com/example/productapi)
+1. controller/ProductController.java:50
+   Inspect the deserialized request: stockQuantity is 0 and validation passed.
+2. service/ProductService.java:34
+   Step over findById. existing.stockQuantity() is 10.
+3. service/ProductService.java:36
+   Inspect request.stockQuantity(), existing.stockQuantity(), and stockQuantity.
+   The condition is false for zero. Step over it to line 39; stockQuantity
+   is still 10. The problem occurs before repository persistence.
+4. repository/InMemoryProductRepository.java:39
+   The replacement product already contains 10; storage faithfully saves it.
+
+Root cause and live fix
+The service starts from the existing quantity and copies the requested
+quantity only when it is greater than zero. Zero is a valid value, not an
+instruction to preserve the existing value. PUT is a full replacement.
+
+In ProductService.update, remove the local stockQuantity variable and its
+if block. Pass request.stockQuantity() directly to the Product constructor:
+
+Product updated = new Product(id, request.name(), request.description(), request.price(),
+        request.category(), request.stockQuantity(), existing.createdAt());
+
+Keep the request validation unchanged: zero is valid, negatives are rejected.
+Rebuild/restart the debugger (or use IDE HotSwap when supported). Rerun the
+entire demo collection: PUT and GET should both return 0, and all 9 assertions
+should pass. The ordinary seven-request CRUD collection should also pass.
+
+Tests and the demo baseline
+mvn clean verify passes with 29 tests in the initial demonstration version.
+zeroStockUpdateCurrentlyRetainsPreviousQuantity intentionally records the
+current buggy result in both the PUT response and a subsequent GET; it does
+not skip, mock, or hide the operation. Tests also cover positive stock updates
+and creation with zero stock.
+
+During the live fix, rename that test to zeroStockUpdatePersistsZeroQuantity
+and change its two stockQuantity expectations from 10 to 0. You can change
+those assertions first to show a red test, fix the service, then rerun
+mvn clean verify to show green. Do not change unrelated expectations.
+
+The primary README is intentionally kept free of the bug and its location.

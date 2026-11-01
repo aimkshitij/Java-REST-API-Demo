@@ -1,0 +1,353 @@
+{
+  "info": {
+    "_postman_id": "190c1b70-1af2-4d57-8a92-8ac2e290bf7d",
+    "name": "Product Management API",
+    "description": "Local in-memory Product Management API. Start the server, then run these requests in order. Create stores the generated productId for get, update, and delete. The last two requests demonstrate validation and missing-product errors. No authentication or environment is required.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Running API base URL without a trailing slash"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string",
+      "description": "Set automatically by Create product; create a new record before repeating the CRUD sequence"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Product ID and Location are returned\", function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.id).to.be.a(\"number\").and.above(0);",
+              "    pm.expect(pm.response.headers.get(\"Location\")).to.include(\"/api/products/\" + body.id);",
+              "    pm.collectionVariables.set(\"productId\", String(body.id));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products"
+          ]
+        },
+        "description": "Create a Desk Lamp. Required fields are name, price greater than zero, and nonnegative stockQuantity. The script stores the returned ID for subsequent requests. Description is limited to 1000 characters.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Desk Lamp\",\n  \"description\": \"Dimmable LED desk lamp\",\n  \"price\": 24.95,\n  \"category\": \"Office\",\n  \"stockQuantity\": 10\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List products",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response is a product array\", function () {",
+              "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products"
+          ]
+        },
+        "description": "List all products, including the five startup samples and any newly created products. Results are ordered by ascending ID."
+      },
+      "response": []
+    },
+    {
+      "name": "Get product by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Requested product is returned\", function () {",
+              "    pm.expect(String(pm.response.json().id)).to.eql(pm.collectionVariables.get(\"productId\"));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{productId}}"
+          ]
+        },
+        "description": "Retrieve the product created by the first request. Run Create product first to populate productId."
+      },
+      "response": []
+    },
+    {
+      "name": "Update product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{productId}}"
+          ]
+        },
+        "description": "Replace the created product with an adjustable lamp. Supply all required editable fields. ID and creation time remain server-managed.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Adjustable Desk Lamp\",\n  \"description\": \"Updated lamp with adjustable arm\",\n  \"price\": 34.5,\n  \"category\": \"Lighting\",\n  \"stockQuantity\": 8\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 204\", function () {",
+              "    pm.response.to.have.status(204);",
+              "});",
+              "pm.test(\"Response body is empty\", function () {",
+              "    pm.expect(pm.response.text()).to.eql(\"\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{productId}}"
+          ]
+        },
+        "description": "Delete the created product. A successful deletion has no response body. Repeating this request for the same ID returns 404."
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid creation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "pm.test(\"Response contains consistent error fields\", function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.all.keys(\"timestamp\", \"status\", \"error\", \"message\");",
+              "    pm.expect(body.status).to.eql(pm.response.code);",
+              "    pm.expect(body.message).to.be.a(\"string\").and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products"
+          ]
+        },
+        "description": "Demonstrate validation errors: blank name, zero price, and negative stockQuantity. The response includes timestamp, status, error, and message.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\",\n  \"description\": \"Invalid sample\",\n  \"price\": 0,\n  \"category\": \"Office\",\n  \"stockQuantity\": -1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Retrieve nonexistent product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "pm.test(\"Response contains consistent error fields\", function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.all.keys(\"timestamp\", \"status\", \"error\", \"message\");",
+              "    pm.expect(body.status).to.eql(pm.response.code);",
+              "    pm.expect(body.message).to.be.a(\"string\").and.not.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/9223372036854775807",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "9223372036854775807"
+          ]
+        },
+        "description": "Request a valid Long ID that is not present in this demo store. The API returns a consistent JSON error."
+      },
+      "response": []
+    }
+  ]
+}

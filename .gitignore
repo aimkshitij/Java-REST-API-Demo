@@ -1,0 +1,9 @@
+/target/
+/work/
+/outputs/
+/.idea/
+/.vscode/
+/.postman/
+/postman/globals/workspace.globals.yaml
+*.iml
+.DS_Store
