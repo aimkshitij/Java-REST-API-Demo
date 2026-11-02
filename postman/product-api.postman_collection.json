@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "190c1b70-1af2-4d57-8a92-8ac2e290bf7d",
     "name": "Product Management API",
-    "description": "Local in-memory Product Management API. Start the server, then run these requests in order. Create stores the generated productId for get, update, and delete. The last two requests demonstrate validation and missing-product errors. No authentication or environment is required.",
+    "description": "Product Management API requests for creating, listing, retrieving, updating, and deleting products. Run requests in order; Create product stores the returned productId for subsequent requests. Includes validation and missing-product checks.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -292,7 +292,7 @@
             "products"
           ]
         },
-        "description": "Demonstrate validation errors: blank name, zero price, and negative stockQuantity. The response includes timestamp, status, error, and message.",
+        "description": "Check validation for a blank name, zero price, and negative stockQuantity. The response includes timestamp, status, error, and message.",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"name\": \"\",\n  \"description\": \"Invalid sample\",\n  \"price\": 0,\n  \"category\": \"Office\",\n  \"stockQuantity\": -1\n}",
@@ -345,7 +345,7 @@
             "9223372036854775807"
           ]
         },
-        "description": "Request a valid Long ID that is not present in this demo store. The API returns a consistent JSON error."
+        "description": "Request a valid Long ID that is not present in the product store. The API returns a JSON error with status 404."
       },
       "response": []
     }

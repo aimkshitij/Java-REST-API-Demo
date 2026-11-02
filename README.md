@@ -1,6 +1,6 @@
 # Product Management REST API
 
-A runnable backend for a frontend integration demonstration. It provides product CRUD, request validation, consistent JSON errors, five sample products, and a health endpoint. All data lives in Java collections; no database, Docker, credentials, or external services are needed at runtime.
+A Spring Boot REST API for managing products, including pricing, categories, and stock quantities. It includes request validation, consistent JSON errors, initial product data, and a health endpoint. Products are stored in memory and reset when the application restarts.
 
 ## Stack and prerequisites
 
@@ -155,7 +155,7 @@ Every startup creates these records in this order:
 
 `ConcurrentHashMap` stores immutable products and `AtomicLong` generates IDs. Deletion does not reuse an ID during the process lifetime. All changes are lost when the process stops; restarting restores the five samples. No persistence configuration is required.
 
-## Frontend integration
+## Browser access
 
 Frontend code can call the API using `fetch` or any HTTP client. For example:
 
@@ -187,9 +187,11 @@ Tests start the Spring application context and exercise HTTP routing, serializat
 2. In Postman, choose **Import** and select `postman/product-api.postman_collection.json`.
 3. Open the collection's **Variables** tab. `baseUrl` defaults to `http://localhost:8080`. No environment or authentication is required.
 4. Run the entire collection in its listed order, or send **Create product** first. Its test script stores the returned ID in the `productId` collection variable.
-5. List, get, update, and delete use the created record. The final two requests demonstrate `400` and `404` responses. Inspect the **Test Results** tab for status assertions.
+5. List, get, update, and delete use the created record. The final two requests check `400` and `404` responses. Inspect the **Test Results** tab for status assertions.
 
 The collection contains create, list, get by ID, update, delete, invalid creation, and nonexistent retrieval requests with descriptions and sample JSON bodies. Running it again creates a fresh record. After deletion, send **Create product** again before manually repeating requests that use `productId`. If using Postman's web UI, select the Desktop Agent to reach localhost.
+
+The separate `postman/product-stock.postman_collection.json` collection covers creating a product, updating its stock, retrieving it, and deleting it. Each collection manages its own `productId` variable.
 
 ## Layout
 
@@ -208,6 +210,7 @@ src/main/java/com/example/productapi/
 src/main/resources/application.properties
 src/test/java/com/example/productapi/ProductApiTests.java
 postman/product-api.postman_collection.json
+postman/product-stock.postman_collection.json
 ```
 
 Controllers handle HTTP and map domain products into response DTOs. The service performs product operations. The repository owns storage and ID assignment. Validation stays on request DTOs, and centralized advice formats application errors.

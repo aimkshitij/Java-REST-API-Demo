@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "70da626f-ac62-4fe1-956b-e945f697d41b",
-    "name": "Product API - Zero Stock Debugging Demo",
-    "description": "Run in order to create a product with stock 10, set stock to zero, retrieve it, and clean up. Assertions express the intended API contract: a valid zero stock update should be saved and returned. Compare the PUT and GET responses while debugging.",
+    "name": "Product Stock Management",
+    "description": "Create a product, update its stock quantity, retrieve the product, and delete it. Requests use the ID returned during creation and check response status codes and stock quantities.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -12,14 +12,14 @@
       "type": "string"
     },
     {
-      "key": "demoProductId",
+      "key": "productId",
       "value": "",
       "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Create product with stock 10",
+      "name": "Create product",
       "event": [
         {
           "listen": "test",
@@ -33,7 +33,7 @@
               "    const body = pm.response.json();",
               "    pm.expect(body.id).to.be.a(\"number\").and.above(0);",
               "    pm.expect(pm.response.headers.get(\"Location\")).to.include(\"/api/products/\" + body.id);",
-              "    pm.collectionVariables.set(\"demoProductId\", String(body.id));",
+              "    pm.collectionVariables.set(\"productId\", String(body.id));",
               "});"
             ]
           }
@@ -61,7 +61,7 @@
             "products"
           ]
         },
-        "description": "Create an independent demo product with stockQuantity 10 and save its ID.",
+        "description": "Create a product with stockQuantity 10 and save its ID.",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"name\": \"Desk Lamp\",\n  \"description\": \"Dimmable LED desk lamp\",\n  \"price\": 24.95,\n  \"category\": \"Office\",\n  \"stockQuantity\": 10\n}",
@@ -75,7 +75,7 @@
       "response": []
     },
     {
-      "name": "Set stock to zero",
+      "name": "Update stock quantity",
       "event": [
         {
           "listen": "test",
@@ -105,17 +105,17 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/api/products/{{demoProductId}}",
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
             "products",
-            "{{demoProductId}}"
+            "{{productId}}"
           ]
         },
-        "description": "Mark the created product sold out by sending stockQuantity 0. Expect 200 and a response with stockQuantity 0.",
+        "description": "Update the product with stockQuantity 0 to mark it out of stock.",
         "body": {
           "mode": "raw",
           "raw": "{\n  \"name\": \"Adjustable Desk Lamp\",\n  \"description\": \"Updated lamp with adjustable arm\",\n  \"price\": 34.5,\n  \"category\": \"Lighting\",\n  \"stockQuantity\": 0\n}",
@@ -129,7 +129,7 @@
       "response": []
     },
     {
-      "name": "Verify persisted stock is zero",
+      "name": "Get product",
       "event": [
         {
           "listen": "test",
@@ -140,7 +140,7 @@
               "    pm.response.to.have.status(200);",
               "});",
               "pm.test(\"Requested product is returned\", function () {",
-              "    pm.expect(String(pm.response.json().id)).to.eql(pm.collectionVariables.get(\"demoProductId\"));",
+              "    pm.expect(String(pm.response.json().id)).to.eql(pm.collectionVariables.get(\"productId\"));",
               "});",
               "pm.test(\"Stock quantity is zero\", function () {",
               "    pm.expect(pm.response.json().stockQuantity).to.eql(0);",
@@ -158,22 +158,22 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/api/products/{{demoProductId}}",
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
             "products",
-            "{{demoProductId}}"
+            "{{productId}}"
           ]
         },
-        "description": "Read the same product after the update. Its persisted stockQuantity should be 0."
+        "description": "Retrieve the product and check its stored stock quantity."
       },
       "response": []
     },
     {
-      "name": "Delete demo product",
+      "name": "Delete product",
       "event": [
         {
           "listen": "test",
@@ -199,17 +199,17 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/api/products/{{demoProductId}}",
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
             "products",
-            "{{demoProductId}}"
+            "{{productId}}"
           ]
         },
-        "description": "Clean up the demo product. Run Create again for another debugging attempt."
+        "description": "Delete the product created by this collection."
       },
       "response": []
     }

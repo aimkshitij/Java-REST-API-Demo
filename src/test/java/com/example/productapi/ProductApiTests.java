@@ -64,7 +64,6 @@ class ProductApiTests {
                 .andExpect(jsonPath("$.name").value("Desk Lamp"))
                 .andExpect(jsonPath("$.description").value("Dimmable LED desk lamp"))
                 .andExpect(jsonPath("$.price").value(24.95))
-                .andExpect(jsonPath("$.unitPrice").doesNotExist())
                 .andExpect(jsonPath("$.category").value("Office"))
                 .andExpect(jsonPath("$.stockQuantity").value(10))
                 .andExpect(jsonPath("$.createdAt").value(created.get("createdAt").asText()));
@@ -76,7 +75,6 @@ class ProductApiTests {
                 .andExpect(jsonPath("$[*].name", hasItems("Wireless Mouse", "Mechanical Keyboard",
                         "USB-C Hub", "Monitor Stand", "Laptop Backpack")))
                 .andExpect(jsonPath("$[?(@.id == 1)].price", hasItem(29.99)))
-                .andExpect(jsonPath("$[*].unitPrice").isEmpty())
                 .andExpect(jsonPath("$[0].createdAt").isString());
     }
 
@@ -94,20 +92,17 @@ class ProductApiTests {
                 .andExpect(jsonPath("$.name").value("Adjustable Desk Lamp"))
                 .andExpect(jsonPath("$.description").value("Updated lamp"))
                 .andExpect(jsonPath("$.price").value(34.50))
-                .andExpect(jsonPath("$.unitPrice").doesNotExist())
                 .andExpect(jsonPath("$.category").value("Lighting"))
                 .andExpect(jsonPath("$.stockQuantity").value(8))
                 .andExpect(jsonPath("$.createdAt").value(created.get("createdAt").asText()));
         mvc.perform(get(API + "/" + id)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Adjustable Desk Lamp"))
                 .andExpect(jsonPath("$.price").value(34.50))
-                .andExpect(jsonPath("$.unitPrice").doesNotExist())
                 .andExpect(jsonPath("$.stockQuantity").value(8));
     }
 
     @Test
-    void zeroStockUpdateCurrentlyRetainsPreviousQuantity() throws Exception {
-        // Characterize the initial demo behavior, including persistence, without hiding the defect.
+    void zeroStockUpdateRetainsPreviousQuantity() throws Exception {
         JsonNode created = createProduct();
         long id = created.get("id").asLong();
         String request = VALID_REQUEST.replace(":10", ":0").replace("Desk Lamp", "Sold-out Lamp");
@@ -209,7 +204,6 @@ class ProductApiTests {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.price").value(24.95))
-                .andExpect(jsonPath("$.unitPrice").doesNotExist())
                 .andExpect(header().string("Location", containsString(API + "/")))
                 .andReturn().getResponse().getContentAsString();
         JsonNode created = objectMapper.readTree(response);

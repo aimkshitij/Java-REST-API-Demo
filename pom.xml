@@ -13,7 +13,7 @@
     <artifactId>product-api</artifactId>
     <version>1.0.0</version>
     <name>Product Management API</name>
-    <description>In-memory product management integration demo</description>
+    <description>REST API for managing products with in-memory storage</description>
     <properties>
         <java.version>21</java.version>
     </properties>
