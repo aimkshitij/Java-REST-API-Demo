@@ -214,3 +214,7 @@ postman/product-stock.postman_collection.json
 ```
 
 Controllers handle HTTP and map domain products into response DTOs. The service performs product operations. The repository owns storage and ID assignment. Validation stays on request DTOs, and centralized advice formats application errors.
+
+## License
+
+Licensed under the [MIT License](LICENSE).
